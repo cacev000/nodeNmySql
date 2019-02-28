@@ -130,4 +130,4 @@ If you haven't written a markdown file yet, [click here for a rundown](https://g
 
    * Hint: You may need to look into JOINS.
 
-   * **HINT**: There may be an NPM package that can log the table to the console. What's is it? Good question :)
+   * **HINT**: There may be an NPM package that can log the table to the console. What is it? Good question :)
