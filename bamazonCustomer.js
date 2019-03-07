@@ -25,9 +25,10 @@ var table = new Table({
 });
 
 function displayItems() {
-    connection.query('SELECT * from products', function(error, results) {
+    connection.query('SELECT * FROM products', function(error, results) {
         if (error) throw error;
 
+        console.log(results);
         var idArr = [];
         results.filter(function(items) {
             table.push(
@@ -50,11 +51,12 @@ function buyItem(itemsId, arrItems) {
         message: 'Type an item ID that you wish to purchase: '
     }]).then(function(answer) {
         var idFoundAt = itemsId.indexOf(parseInt(answer.itemId));
+        var idArr = [];
 
         if (idFoundAt >= 0) {
             console.log('Found Item');
-            askBuyQuantity();
-            results.filter(function(items) {
+            askBuyQuantity(answer.itemId);
+            arrItems.filter(function(items) {
                 table.push(
                     [items.item_id, items.product_name, items.price]
                 );
@@ -73,14 +75,36 @@ function buyItem(itemsId, arrItems) {
     });
 }
 
-function askBuyQuantity() {
+function askBuyQuantity(id) {
     inquirer.prompt([{
         type: 'input',
         name: 'quantity',
-        message: 'Type an item ID that you wish to purchase: '
+        message: 'How many do you want to buy from the selected item: '
     }]).then(function(answer) {
 
+        connection.query('SELECT stock_quantity, product_name FROM products where item_id =' + id, function (error, results) {
+            if (error) throw error;
 
+            results.filter(function (items) {
+                if(items.stock_quantity > answer.quantity){
+                    var newStock = items.stock_quantity - answer.quantity;
+    
+                    connection.query('UPDATE products SET stock_quantity=' + newStock + ' WHERE item_id=' + id, function (error, results) {
+                        console.log('================================\n');
+                        console.log('CONGRATULATION! You just bought: ');
+                        console.log(answer.quantity + ' of the following product: ' + items.product_name + '\n' );
+                        console.log('================================\n');
+
+                        connection.end();
+                    });
+                } else {
+                    console.log('================================\n');
+                    console.log('\nNot enough in Stock. Please pick a lesser quantity\n');
+                    console.log('\n================================\n');
+                    askBuyQuantity(id);
+                }
+            });
+        });
     });
 }
 
